@@ -27,46 +27,53 @@ class ViewModel: ObservableObject {
 
 struct ContentView: View {
     @StateObject var viewModel = ViewModel()
+    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(viewModel.courses, id: \.self) { course in
-                    HStack {
-                        URLImage(URL(string: course.image)!) { image in
-                            image
-                                .resizable()
-                                .frame(width: 120, height: 70)
-                                .cornerRadius(5)
+        ZStack {
+//            Color("Background")
+//                .edgesIgnoringSafeArea(.all)
+            
+            NavigationView {
+                List {
+                    ForEach(viewModel.courses, id: \.self) { course in
+                        HStack {
+                            URLImage(URL(string: course.image)!) { image in
+                                image
+                                    .resizable()
+                                    .frame(width: 120, height: 70)
+                                    .cornerRadius(5)
+                            }
+                            
+                            Text(course.name)
+                                .font(.system(size: 14))
                         }
-                        
-                        Text(course.name)
-                            .font(.system(size: 14))
+                        .background(colorScheme == .dark ? .black : .white)
+                        .onTapGesture(perform: {
+                            print(course)
+                        })
                     }
-                    .background(.white)
-                    .onTapGesture(perform: {
-                        print(course)
-                    })
+                }
+                .listStyle(.plain)
+                .navigationTitle("Courses")
+                .padding(3)
+                .background(colorScheme == .dark ? .black : .white)
+            }
+            .task {
+                do {
+                    let _: () = try await viewModel.fetch()
+                } catch {
+                    print(error)
                 }
             }
-            .listStyle(.plain)
-            .navigationTitle("Courses")
-            .padding(3)
-            .background(.white)
+            .background(Color.white)
+            .edgesIgnoringSafeArea(.all)
         }
-        .task {
-            do {
-                let _: () = try await viewModel.fetch()
-            } catch {
-                print(error)
-            }
-        }
-        .background(Color.white)
-        .edgesIgnoringSafeArea(.all)
     }
 }
 
 #Preview {
     ContentView()
         .edgesIgnoringSafeArea(.all)
+//        .environment(\.colorScheme, .dark)
 }
